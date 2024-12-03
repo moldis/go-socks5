@@ -11,6 +11,7 @@ import (
 	"net"
 
 	"github.com/go-redis/redis/v8"
+	proxyproto "github.com/pires/go-proxyproto"
 	"github.com/things-go/go-socks5/bufferpool"
 	"github.com/things-go/go-socks5/statute"
 )
@@ -113,8 +114,13 @@ func (sf *Server) ListenAndServeTLS(network, addr string, c *tls.Config) error {
 // Serve is used to serve connections from a listener
 func (sf *Server) Serve(l net.Listener) error {
 	defer l.Close()
+
+	// Wrap listener in a proxyproto listener
+	proxyListener := &proxyproto.Listener{Listener: l}
+	defer proxyListener.Close()
+
 	for {
-		conn, err := l.Accept()
+		conn, err := proxyListener.Accept()
 		if err != nil {
 			return err
 		}

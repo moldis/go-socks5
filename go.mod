@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/pires/go-proxyproto v0.8.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/net v0.29.0
 )
