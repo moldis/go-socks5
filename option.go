@@ -2,9 +2,10 @@ package socks5
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
 	"io"
 	"net"
+
+	"github.com/go-redis/redis/v8"
 
 	"github.com/things-go/go-socks5/bufferpool"
 )

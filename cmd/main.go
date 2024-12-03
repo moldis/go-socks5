@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
-	"github.com/things-go/go-socks5"
 	"log"
 	"os"
+
+	"github.com/go-redis/redis/v8"
+	"github.com/things-go/go-socks5"
 )
 
 func main() {
