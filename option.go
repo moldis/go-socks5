@@ -2,6 +2,7 @@ package socks5
 
 import (
 	"context"
+	"github.com/go-redis/redis/v8"
 	"io"
 	"net"
 
@@ -165,5 +166,11 @@ func WithBindMiddleware(m Middleware) Option {
 func WithAssociateMiddleware(m Middleware) Option {
 	return func(s *Server) {
 		s.userAssociateMiddlewares = append(s.userAssociateMiddlewares, m)
+	}
+}
+
+func WithRedisClient(cl *redis.Client) Option {
+	return func(s *Server) {
+		s.cl = cl
 	}
 }
