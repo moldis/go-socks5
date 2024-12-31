@@ -20,7 +20,8 @@ func TestDatagram(t *testing.T) {
 	datagram, err := NewDatagram("localhost:8080", []byte{1, 2, 3})
 	require.NoError(t, err)
 	require.Equal(t, Datagram{
-		0, 0, AddrSpec{
+		0, 0,
+		AddrSpec{
 			FQDN:     "localhost",
 			Port:     8080,
 			AddrType: ATYPDomain,
@@ -33,7 +34,8 @@ func TestDatagram(t *testing.T) {
 	datagram, err = NewDatagram("127.0.0.1:8080", []byte{1, 2, 3})
 	require.NoError(t, err)
 	require.Equal(t, Datagram{
-		0, 0, AddrSpec{
+		0, 0,
+		AddrSpec{
 			IP:       net.IPv4(127, 0, 0, 1),
 			Port:     8080,
 			AddrType: ATYPIPv4,
@@ -45,7 +47,8 @@ func TestDatagram(t *testing.T) {
 	datagram, err = NewDatagram("[::1]:8080", []byte{1, 2, 3})
 	require.NoError(t, err)
 	require.Equal(t, Datagram{
-		0, 0, AddrSpec{
+		0, 0,
+		AddrSpec{
 			IP:       net.IPv6loopback,
 			Port:     8080,
 			AddrType: ATYPIPv6,
@@ -67,7 +70,8 @@ func TestParseDatagram(t *testing.T) {
 			"IPv4",
 			[]byte{0, 0, 0, ATYPIPv4, 127, 0, 0, 1, 0x1f, 0x90, 1, 2, 3},
 			Datagram{
-				0, 0, AddrSpec{
+				0, 0,
+				AddrSpec{
 					IP:       net.IPv4(127, 0, 0, 1),
 					Port:     8080,
 					AddrType: ATYPIPv4,
@@ -80,7 +84,8 @@ func TestParseDatagram(t *testing.T) {
 			"IPv6",
 			[]byte{0, 0, 0, ATYPIPv6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0x1f, 0x90, 1, 2, 3},
 			Datagram{
-				0, 0, AddrSpec{
+				0, 0,
+				AddrSpec{
 					IP:       net.IPv6loopback,
 					Port:     8080,
 					AddrType: ATYPIPv6,
@@ -93,7 +98,8 @@ func TestParseDatagram(t *testing.T) {
 			"FQDN",
 			[]byte{0, 0, 0, ATYPDomain, 9, 'l', 'o', 'c', 'a', 'l', 'h', 'o', 's', 't', 0x1f, 0x90, 1, 2, 3},
 			Datagram{
-				0, 0, AddrSpec{
+				0, 0,
+				AddrSpec{
 					FQDN:     "localhost",
 					Port:     8080,
 					AddrType: ATYPDomain,

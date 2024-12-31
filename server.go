@@ -10,6 +10,8 @@ import (
 	"log"
 	"net"
 
+	"github.com/go-redis/redis/v8"
+	proxyproto "github.com/pires/go-proxyproto"
 	"github.com/things-go/go-socks5/bufferpool"
 	"github.com/things-go/go-socks5/statute"
 )
@@ -62,6 +64,8 @@ type Server struct {
 	userConnectMiddlewares   MiddlewareChain
 	userBindMiddlewares      MiddlewareChain
 	userAssociateMiddlewares MiddlewareChain
+
+	cl *redis.Client
 }
 
 // NewServer creates a new Server
@@ -110,8 +114,13 @@ func (sf *Server) ListenAndServeTLS(network, addr string, c *tls.Config) error {
 // Serve is used to serve connections from a listener
 func (sf *Server) Serve(l net.Listener) error {
 	defer l.Close()
+
+	// Wrap listener in a proxyproto listener
+	proxyListener := &proxyproto.Listener{Listener: l}
+	defer proxyListener.Close()
+
 	for {
-		conn, err := l.Accept()
+		conn, err := proxyListener.Accept()
 		if err != nil {
 			return err
 		}
@@ -137,6 +146,24 @@ func (sf *Server) ServeConn(conn net.Conn) error {
 	}
 	if mr.Ver != statute.VersionSocks5 {
 		return statute.ErrNotSupportVersion
+	}
+
+	// ignore banned IP's
+	if sf.cl != nil {
+		sf.logger.Infof("checking banned ip: %s", conn.RemoteAddr().String())
+		ip, _, _ := net.SplitHostPort(conn.RemoteAddr().String())
+
+		ctx := context.Background()
+		res := sf.cl.WithContext(ctx).
+			SIsMember(ctx, "banned_ips", ip)
+		if res.Err() != nil {
+			sf.logger.Errorf("failed to check banned ip: %v", res.Err())
+		} else {
+			if res.Val() {
+				defer conn.Close()
+				return errors.New(fmt.Sprintf("connection from banned IP: %s", ip))
+			}
+		}
 	}
 
 	// Authenticate the connection
@@ -178,7 +205,8 @@ func (sf *Server) ServeConn(conn net.Conn) error {
 
 // authenticate is used to handle connection authentication
 func (sf *Server) authenticate(conn io.Writer, bufConn io.Reader,
-	userAddr string, methods []byte) (*AuthContext, error) {
+	userAddr string, methods []byte,
+) (*AuthContext, error) {
 	// Select a usable method
 	for _, auth := range sf.authMethods {
 		for _, method := range methods {
